@@ -2093,7 +2093,12 @@
 			}
 		}
 
-		/* 바인드 메타에 메타를 추가한다. */
+		/**
+		 * 바인딩 메타 맵에 메타를 추가한다.
+		 *
+		 * @param {Object.<string, object>} bm 바인딩 메타데이터 맵
+		 * @param {Object} bmo 바인딩 메타데이터 객체
+		 */
 		function addBm(bm, bmo){
 			if(!bm[bmo.key]){
 				bm[bmo.key] = [];
@@ -2104,13 +2109,12 @@
 		/**
 		 * 유일한 셀렉터 문자열을 반환한다.
 		 *
-		 * ele [, elContext]
-		 *
-		 * ele: 셀렉터 생성 대상 요소
-		 * elContext: 생략할 경우 최상위 노드까지 탐색하여 셀렉터를 생성한다.
+		 * @param {HTMLElement|jQuery} ele - 셀렉터 생성 대상 요소
+		 * @param {HTMLElement|jQuery|string} [elContext] - 생략할 경우 최상위 노드까지 탐색하여 셀렉터를 생성한다.
+		 * @returns {string} - $elContext 내에서 ele를 식별하기 위한 유일한 셀렉터
 		 */
 		function uniqueSelector(ele, elContext){
-			var selector, $ele = $(ele);
+			var selector, $ele = $(ele), $elContext = elContext ? $(elContext) : null;
 			while($ele.length){
 				var rawEle = $ele[0];
 				var tag = rawEle.localName;
@@ -2124,18 +2128,27 @@
 				}
 				selector = tag + (selector ? '>' + selector : '');
 				$ele = parent;
-				if($ele[0] === elContext[0]){
+				if($elContext && $ele[0] === $elContext[0]){
 					break;
 				}
 			}
 			return selector;
 		}
 
+		/* 상수 숫자/문자열 제거용 정규 표현식 */
 		var regexpClear = /\s*[0-9]+\s*|'[^']*'|"[^"]*|[\)\(]/g;
+		/* 바인딩 변수 추출 용 정규 표현식 */
 		var regexpKeys = /(^[a-zA-Zㄱ-힣_][a-zA-Z0-9ㄱ-힣_]*|\s+[a-zA-Zㄱ-힣_][a-zA-Z0-9ㄱ-힣_]*)/g;
+		/* 표현식 포함 여부 테스트용 정규 표현식 */
 		var regexpExpr = /\{\s*([^\}]+)\s*\}/g;
 
-		/* 표현식에 사용된 바인딩 변수를 추출 한다. 변수를 포함하는 표현식의 경우에만 데이터 변경 시 재 평가가 필요하다. */
+		/**
+		 * 표현식에 사용된 바인딩 변수를 추출 한다. 변수를 포함하는 표현식의 경우에만 데이터 변경 시 재 평가가 필요하다.
+		 *
+		 * @param {string} s - 표현식 문자열
+		 * @returns {Object.<string,number>} - 표현식에 포함된 바인딩 변수명을 키로 사용 횟수를 값으로 한 맵을 반환.
+		 *
+		 **/
 		function extractKeymap(s){
 			var expr, key, km;
 			/* 표현식을 포함하는가? */
@@ -2163,14 +2176,14 @@
 			parse: peg$parse,
 			/**
 			 *
-			 * elContext, meta, data [, exprContext]
+			 * 지정 요소에 바인딩을 수행한다.
 			 *
-			 * elContext: 데이터가 바인딩될 HTML 요소 혹은 jQuery 객체 (각각의 바인딩 요소가 아닌 복수의 바인딩 대상 요소를 포함하는 부모 요소)
-			 * meta: 바인딩 메타 정보
-			 * data: 바인딩 데이터
-			 * exprContext: 미리 준비된 표현식 컨텍스트 객체
+			 * @param {jQuery|HTMLElement|string} elContext - 데이터가 바인딩될 HTML 요소 혹은 jQuery 객체 (각각의 바인딩 요소가 아닌 복수의 바인딩 대상 요소를 포함하는 부모 요소)
+			 * @param {Object} meta - 바인딩 메타 정보
+			 * @param {Object} data - 바인딩 데이터
+			 * @param {Object} [exprContext] - 미리 준비된 표현식 컨텍스트 객체
 			 *
-			 * return $ele
+			 * @returns {jQuery} 바인딩된 대상 요소 jQuery 객체
 			 */
 			execute: function(elContext, meta, data, exprContext){
 
@@ -2180,30 +2193,48 @@
 					exprContext = { context: data };
 				}
 
-				var $ele = $elContext.find(meta.selector);
+				var $ele =  $elContext.find(meta.selector);
 
 				switch(meta.type){
 					case "id":
 						switch(meta.tag){
 							case 'input':
+								switch(meta.tagType){
+									case 'radio':
+									case 'checkbox':
+										if($ele.hasClass('select_template')){
+
+										}else{
+
+										}
+										break;
+									default:
+										$ele.val(data[meta.key] == null ? "" : String(data[meta.key]));
+								}
+								break;
+							case 'select':
 								$ele.val(data[meta.key] == null ? "" : String(data[meta.key]));
 								break;
 							case 'img':
-								break;
-							case 'select':
+								$ele.attr('src', data[meta.key] == null ? "" : String(data[meta.key]));
 								break;
 							default:
 								// noop
 					}
 					case "attr":
-						if(meta.name == "data-value"){
-							if($ele.is("[data-html]")){
-								$ele.html(N.expr.parse(meta.expr, exprContext));
-							}else{
-								$ele.text(N.expr.parse(meta.expr, exprContext));
-							}
-						}else{
-							$ele.attr(meta.name, N.expr.parse(meta.expr, exprContext));
+						switch(meta.name){
+							case 'data-value':
+								if($ele.is("[data-html]")){
+									$ele.html(N.expr.parse(meta.expr, exprContext));
+								}else{
+									$ele.text(N.expr.parse(meta.expr, exprContext));
+								}
+								break;
+							case 'value':
+								$ele.val(N.expr.parse(meta.expr, exprContext));
+								break;
+							default:
+								$ele.attr(meta.name, N.expr.parse(meta.expr, exprContext));
 						}
 						break;
 					case "text":
@@ -2220,51 +2251,53 @@
 			 *
 			 * HTML 요소로 부터 바인딩을 위한 메타 정보를 분석한다.
 			 *
-			 * elContext, targets
-			 *
-			 * elContext: 데이터가 바인딩될 HTML 요소 혹은 jQuery 객체 (각각의 바인딩 요소가 아닌 복수의 바인딩 대상 요소를 포함하는 부모 요소)
-			 * targets: 바인딩 대상 요소에 대한 셀렉터 혹은 jQuery 객체
+			 * @param {HTMLElement|jQuery|string} elContext - 데이터가 바인딩될 HTML 요소 혹은 jQuery 객체 (각각의 바인딩 요소가 아닌 복수의 바인딩 대상 요소를 포함하는 부모 요소)
 			 */
-			analyze: function(elContext, targets){
+			analyze: function(elContext){
 
 				var $elContext = $(elContext);
-				var $targets = $(targets);
+
+				/** @type {jQuery} */
+				var $targets = $elContext.find(':not(.view_context__, option)').not('select_input__:not(.select_template)');
 
 				var bm = {};
 
-				var a, n, v, attrs, tagName, selector;
+				var a, n, v, attrs, tagName, selector, hasValueBinding;
 
-				$targets.each(function(i, ele){
+				$targets.each(function(i, /** @type {HTMLElement} */ele){
 
-					var hasValueBinding = false;
 					/* 1. 표현식이 사용된 속성 처리 */
 					selector = uniqueSelector(ele, $elContext);
 					tagName = ele.tagName.toLowerCase();
 					attrs = ele.attributes;
+
+					/* data-value, value 속성은 id 바인딩을 쓸 수 없는 경우에 사용 */
+					hasValueBinding = ele.hasAttribute('data-value') || ele.hasAttribute('value');
+
 					for(var i = 0; i < attrs.length; i++){
 						a = attrs[i];
 						n = a.name;
 						v = a.value;
 
-						var bindarr;
-
 						if(n == 'id'){
-							/* 아이디가 있는 요소는 무조건 바인딩 대상 */
+							/* 값 바인딩 속성이 존재하는 경우 id 바인딩은 생략한다 */
+							if(hasValueBinding){
+								continue;
+							}
 							addBm(bm, {
-								type: 'id'
+								  type: 'id'
 								, selector: selector
 								, tag: tagName
 								, tagType: ele.type
 								, key: v
 							});
-
 						}else if("pattern,".indexOf(n) > -1){
 							/* 표현식 처리 대상이 아닌 속성 */
 							continue;
 						}else {
 							for(var k in extractKeymap(v)){
 								addBm(bm, {
-									type: 'attr'
+									  type: 'attr'
 									, name: n
 									, expr: v
 									, selector: selector
@@ -2275,7 +2308,6 @@
 
 								if(n == "data-value"){
 									ele.removeAttribute("data-value");
-									hasValueBinding = true;
 								}
 							}
 						}
@@ -2290,13 +2322,13 @@
 						var text = node.nodeValue;
 						for(var k in extractKeymap(text)){
 							addBm(bm, {
-								type: 'text'
-									, index: i
-									, expr: text
-									, selector: selector
-									, tag: tagName
-									, tagType: ele.type
-									, key: k
+								  type: 'text'
+								, index: i
+								, expr: text
+								, selector: selector
+								, tag: tagName
+								, tagType: ele.type
+								, key: k
 							});
 						}
 					});
