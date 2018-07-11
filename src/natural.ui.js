@@ -3208,7 +3208,7 @@
 												if (vals.rowStatus !== "insert" && vals.rowStatus !== "delete") {
 													vals.rowStatus = "update";
 													// add data changed flag
-													currEle.addClass("data_changed__");
+													$currEle.addClass("data_changed__");
 													if(!opts.context.hasClass("row_data_changed__")) {
 														opts.context.addClass("row_data_changed__");
 													}
@@ -3318,7 +3318,7 @@
 											}
 
 											// notify data changed
-											if (!currEle.prop("disabled") && !$currEle.prop("readonly")) {
+											if (!$currEle.prop("disabled") && !$currEle.prop("readonly")) {
 												N.ds.instance(opts.extObj !== null ? opts.extObj : self).notify(opts.extRow > -1 ? opts.extRow : opts.row, meta.key);
 											}
 		                                }
