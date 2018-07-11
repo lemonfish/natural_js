@@ -3102,6 +3102,8 @@
 										return;
 									case 'id':
 										break;
+									default:
+										break;
 								}
 
 								var $ele = opts.context.find(meta.selector);
@@ -3159,6 +3161,7 @@
 
 									default:
 										isFormattable = true;
+										break;
 								}
 								//validation
 								if(isValidatable && hasValidation){

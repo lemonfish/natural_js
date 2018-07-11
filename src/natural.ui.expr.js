@@ -2210,6 +2210,7 @@
 										break;
 									default:
 										$ele.val(data[meta.key] == null ? "" : String(data[meta.key]));
+										break;
 								}
 								break;
 							case 'select':
@@ -2220,7 +2221,9 @@
 								break;
 							default:
 								// noop
-					}
+								break;
+						}
+						break;
 					case "attr":
 						switch(meta.name){
 							case 'data-value':
@@ -2235,6 +2238,7 @@
 								break;
 							default:
 								$ele.attr(meta.name, N.expr.parse(meta.expr, exprContext));
+								break;
 						}
 						break;
 					case "text":
@@ -2243,6 +2247,7 @@
 						break;
 					default:
 						// noop
+						break;
 				}
 				return $ele;
 			},
