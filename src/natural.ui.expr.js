@@ -2170,6 +2170,20 @@
 			return km;
 		}
 
+		var isnottextnodecontainermap = {
+			  select: true
+			, input: true
+			, textarea: true
+			, br: true
+			, hr: true
+		}
+		var isnotexprattrmap = {
+			  'data-opts': true
+			, 'data-format': true
+			, 'data-validate': true
+			, pattern: true
+		}
+
 		N.expr = {
 			SyntaxError: peg$SyntaxError,
 			parse: peg$parse,
@@ -2195,16 +2209,16 @@
 				var $ele =  $elContext.find(meta.selector);
 
 				switch(meta.type){
-					case "id":
+					case "value":
 						switch(meta.tag){
 							case 'input':
 								switch(meta.tagType){
 									case 'radio':
 									case 'checkbox':
-										if($ele.hasClass('select_template')){
-
+										if(meta.isComponent){
+											$ele.instance('select').val(data[meta.key]);
 										}else{
-
+											$ele.vals(data[meta.key]);
 										}
 										break;
 									default:
@@ -2213,8 +2227,14 @@
 								}
 								break;
 							case 'textarea':
-							case 'select':
 								$ele.val(data[meta.key] == null ? "" : String(data[meta.key]));
+								break;
+							case 'select':
+								if(meta.isComponent){
+									$ele.instance('select').val(data[meta.key]);
+								}else{
+									$ele.val(data[meta.key]);
+								}
 								break;
 							case 'img':
 								$ele.attr('src', data[meta.key] == null ? "" : String(data[meta.key]));
@@ -2263,11 +2283,13 @@
 				var $elContext = $(elContext);
 
 				/** @type {jQuery} */
-				var $targets = $elContext.find(':not(.view_context__, option)').not('select_input__:not(.select_template)');
+				var $targets = $elContext.find(':not(.view_context__, option)').not('select_input__:not(.select_template__)');
 
 				var bm = {};
 
-				var a, n, v, attrs, tagName, selector, hasValueBinding;
+				var a, n, v, attrs, tagName, selector, hasValueBinding, isComponent, hasGroup;
+
+				var gm = {};
 
 				$targets.each(function(i, /** @type {HTMLElement} */ele){
 
@@ -2275,6 +2297,19 @@
 					selector = uniqueSelector(ele, $elContext);
 					tagName = ele.tagName.toLowerCase();
 					attrs = ele.attributes;
+
+					isComponent = $(ele).hasClass('select_template__');
+					hasGroup = false;
+
+					if(!isComponent && tagName == 'input' && (ele.type == 'checkbox' || ele.type == 'radio')){
+						if(ele.hasAttribute('name')){
+							if(gm[ele.name]){
+								return;
+							}
+							gm[ele.name] = true;
+							hasGroup = true;
+						}
+					}
 
 					/* data-value, value 속성은 id 바인딩을 쓸 수 없는 경우에 사용 */
 					hasValueBinding = ele.hasAttribute('data-value') || ele.hasAttribute('value');
@@ -2284,21 +2319,32 @@
 						n = a.name;
 						v = a.value;
 
+						if(isnotexprattrmap[n]){
+							continue;
+						}
+
 						if(n == 'id'){
-							/* 값 바인딩 속성이 존재하는 경우 id 바인딩은 생략한다 */
-							if(hasValueBinding){
+							/* 값 바인딩 속성 혹은 그룹이 존재하는 경우 id 바인딩은 생략한다 */
+							if(hasValueBinding || hasGroup){
 								continue;
 							}
 							addBm(bm, {
-								  type: 'id'
+								  type: 'value'
 								, selector: selector
 								, tag: tagName
 								, tagType: ele.type
 								, key: v
+								, isComponent: isComponent
 							});
-						}else if("pattern,".indexOf(n) > -1){
-							/* 표현식 처리 대상이 아닌 속성 */
-							continue;
+						}else if(n == 'name'){
+							addBm(bm, {
+								  type: 'value'
+								, selector: ':' + ele.type + '[name=' + ele.name + ']'
+								, tag: tagName
+								, tagType: ele.type
+								, key: v
+								, isComponent: isComponent
+							});
 						}else {
 							for(var k in extractKeymap(v)){
 								addBm(bm, {
@@ -2309,6 +2355,7 @@
 									, tag: tagName
 									, tagType: ele.type
 									, key: k
+									, isComponent: isComponent
 								});
 
 								if(n == "data-value"){
@@ -2316,6 +2363,10 @@
 								}
 							}
 						}
+					}
+
+					if(isnottextnodecontainermap[tagName]){
+						return;
 					}
 
 					/* 표현식이 사용된 텍스트 노드 처리 */

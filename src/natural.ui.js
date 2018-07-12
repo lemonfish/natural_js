@@ -2525,6 +2525,11 @@
 		});
 
 		$.extend(Select.prototype, {
+			/**
+			 * @param {true|false} [selFlag] - 생략 시 원시 배열, true 입력시 선택된 객체 배열, false 입력 시 원본 배열에 대한 jQuery 객체
+			 *
+			 * @return {array|jQuery}
+			 */
 			data : function(selFlag) {
 				var opts = this.options;
 				if(selFlag !== undefined && selFlag === true) {
@@ -3100,7 +3105,7 @@
 									case 'text':
 										N.expr.execute(opts.context, meta, vals, exprContext);
 										return;
-									case 'id':
+									case 'value':
 										break;
 									default:
 										break;
@@ -3186,7 +3191,7 @@
 									}
 								}
 
-								isInput == isInput && (meta.type == 'id' || (meta.type == 'attr' && meta.name == 'value'));
+								isInput == isInput && (meta.type == 'value' || (meta.type == 'attr' && meta.name == 'value'));
 
 								//dataSync
 								if(isInput && isFocusable && N.isEmptyObject($ele.events("focusout", "dataSync.form"))){
@@ -3244,7 +3249,7 @@
 								if(isInput && isChangable && N.isEmptyObject($ele.events("change", "dataSync.form"))){
 									$ele.bind("change.form.dataSync", function(e) {
 										var $currEle = $(this);
-										var $currVals = $currEle.vals();
+										var currVals = $currEle.vals();
 
 										// for val method
 										if(vals !== opts.data[opts.row]) {
@@ -3285,7 +3290,7 @@
 								if(isInput && isClickable){
 									//dataSync
 									$ele.unbind("click.form.dataSync select.form.dataSync");
-									$eles.data("eles", eles).tpBind("click.form.dataSync select.form.dataSync", function(e) {
+									$ele.data("eles", $ele).tpBind("click.form.dataSync select.form.dataSync", function(e) {
 										var $currEle = $(this);
 										var currVals = $(this).data("eles").vals();
 
