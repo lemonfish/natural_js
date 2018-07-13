@@ -69,7 +69,9 @@
 						extObj : self,
 						extRow : i,
 						revert : opts.revert,
-						unbind : false
+						unbind : false,
+						bindmeta: opts.bindmeta,
+						exprContext: opts.exprContext
 					});
 
 					if(opts.rowHandlerBeforeBind !== null) {
@@ -2733,6 +2735,17 @@
 			/* 최초 생성 시 표현식 분석 */
 			if(N.expr && !this.options.bindmeta){
 				this.options.bindmeta = N.expr.analyze(this.options.context);
+				this.options.exprContext = {
+					  context: null
+					, N: N
+					, $: $
+					, _: {
+						  index: this.options.row
+						, comp: this
+						, data: this.options.data
+						, cont: this.options.context.closest('.view_context__').instance('cont')
+					}
+				}
 			}
 
 			// register this to N.ds for realtime data synchronization
@@ -3083,7 +3096,11 @@
 							}
 						}
 					} else {
-						var exprContext = { context: vals };
+						var exprContext = opts.exprContext;
+						exprContext.context = vals;
+						exprContext._.index = opts.extRow ? opts.extRow : opts.row;
+						exprContext._.data = opts.extObj ? opts.extObj.data(false) : opts.data;
+
 						for ( var key in vals ) {
 							if(cols !== undefined && cols.indexOf(spltSepa + key + spltSepa) < 0){
 								continue;
@@ -3095,6 +3112,8 @@
 
 							$.each(opts.bindmeta[key], function(i, meta){
 
+								var $ele = opts.context.find(meta.selector);
+								exprContext._.$ele = $ele;
 								switch(meta.type){
 									case 'attr':
 										if(meta.name != 'value'){
@@ -3111,7 +3130,6 @@
 										break;
 								}
 
-								var $ele = opts.context.find(meta.selector);
 
 								if (vals.rowStatus === 'update') {
 									$ele.addClass('data_changed__');
@@ -3220,10 +3238,12 @@
 												}
 
 												if(opts.bindmeta[meta.key].length > 1){
-													var exprContext = { context: vals };
+													opts.exprContext.context = vals;
+													opts.exprContext._.index = opts.row;
+
 													$.each(opts.bindmeta[meta.key], function(i, m){
 														if(meta !== m){
-															N.expr.execute(opts.context, m, vals, exprContext);
+															N.expr.execute(opts.context, m, vals, opts.exprContext);
 														}
 													});
 												}
@@ -3271,7 +3291,8 @@
 											}
 
 											if(opts.bindmeta[meta.key].length > 1){
-												var exprContext = { context: vals };
+												opts.exprContext.context = vals;
+												opts.exprContext._.index = opts.row;
 												$.each(opts.bindmeta[meta.key], function(i, m){
 													if(meta !== m){
 														N.expr.execute(opts.context, m, vals, exprContext);
@@ -3314,7 +3335,8 @@
 											}
 
 											if(opts.bindmeta[meta.key].length > 1){
-												var exprContext = { context: vals };
+												opts.exprContext.context = vals;
+												opts.exprContext._.index = opts.row;
 												$.each(opts.bindmeta[meta.key], function(i, m){
 													if(meta !== m){
 														N.expr.execute(opts.context, m, vals, exprContext);
@@ -4604,6 +4626,22 @@
 
 			// set this instance to context element
 			this.options.context.instance("grid", this);
+
+			/* 최초 생성 시 표현식 분석 */
+			if(N.expr && !this.options.bindmeta){
+				this.options.bindmeta = N.expr.analyze(this.tempRowEle);
+				this.options.exprContext = {
+					  context: null
+					, N: N
+					, $: $
+					, _: {
+						  index: 0
+						, comp: this
+						, data: this.options.data
+						, cont: this.options.context.closest('.view_context__').instance('cont')
+					}
+				}
+			}
 
 			// register this to N.ds for realtime data synchronization
 			N.ds.instance(this, true);
@@ -6090,7 +6128,9 @@
 					extObj : this,
 					extRow : row === undefined ? (opts.addTop ? 0 : opts.data.length) : row,
 					addTop : opts.addTop,
-					revert : opts.revert
+					revert : opts.revert,
+					bindmeta: opts.bindmeta,
+					exprContext: opts.exprContext
 				});
 
 				if(opts.rowHandlerBeforeBind !== null) {
