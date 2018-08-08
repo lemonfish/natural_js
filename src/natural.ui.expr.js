@@ -341,7 +341,7 @@
 				return { type: 'attr', name: attr };
 			};
 			var peg$f8 = function(e) { return { type: 'attr', name: e }; };
-			var peg$f9 = function(fn, p) { return window[fn].apply(window, p); };
+			var peg$f9 = function(fn, p) { return { type: 'gfn', name: fn, params: p, value: window[fn].apply(window, p) }; };
 			var peg$f10 = function(attr, p) { return { type: 'fn', name: attr.name, params: p }; };
 			var peg$f11 = function(p, ps) {
 				var params = [];
