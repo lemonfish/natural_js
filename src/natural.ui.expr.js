@@ -2706,7 +2706,7 @@
 					};
 				}
 
-				var $ele =  exprContext.$ele ? exprContext.$ele : $elContext.find(meta.selector);
+				var $ele =  exprContext.$ele ? exprContext.$ele : $elContext.find('>' + meta.selector);
 
 				switch(meta.type){
 					case "value":
