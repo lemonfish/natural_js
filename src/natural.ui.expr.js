@@ -2652,11 +2652,11 @@
 			}
 
 			regexpExpr.lastIndex = 0;
+			km = {};
 			/* 표현식을 추출 */
 			while(expr = regexpExpr.exec(s)){
 				/* 변수 추출을 위해 상수 제거 */
 				expr = expr[1].replace(regexpClear, ' ').trim();
-				km = {};
 				/* 변수 추출 및 중복 제거 */
 				while(key = regexpKeys.exec(expr)){
 					key = key[1].trim();
