@@ -2682,6 +2682,20 @@
 			, 'pattern': true
 		}
 
+		/**
+		 * 표현식 내에서 사용 가능한 예약 변수
+		 * 
+		 * N: Natural-JS의 N 함수
+		 * $: jQuery 함수
+		 * this: 현재 데이터
+		 * window: 전역 window 객체
+		 * _: 컴포넌트 및 기타 참조를 지닌 객체
+		 *     _.comp: 현재 컴포넌트
+		 *     _.cont: 현재 컴포넌트의 컨트롤러
+		 *     _.index: 현재 데이터의 인덱스
+		 *     _.data: 원시 데이터 배열
+		 * 
+		 */
 		N.expr = {
 			SyntaxError: peg$SyntaxError,
 			parse: peg$parse,
@@ -2862,7 +2876,9 @@
 								, hasGroup: hasGroup
 							});
 						}else {
+							var noneDeterministicExpr = true;
 							for(var k in extractKeymap(v)){
+								noneDeterministicExpr = false;
 								addBm(bm, {
 									  type: 'attr'
 									, name: n
@@ -2877,6 +2893,19 @@
 								if(n == "data-value"){
 									ele.removeAttribute("data-value");
 								}
+							}
+
+							if(noneDeterministicExpr){
+								addBm(bm, {
+									type: 'attr'
+								  , name: n
+								  , expr: v
+								  , selector: selector
+								  , tag: tagName
+								  , tagType: ele.type
+								  , key: "*"
+								  , isComponent: isComponent
+							  });								
 							}
 						}
 					}

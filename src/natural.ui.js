@@ -2742,7 +2742,7 @@
 					, _: {
 						  index: this.options.row
 						, comp: this
-						, data: this.options.data
+						, data: this.options.data.get()
 						, cont: this.options.context.closest('.view_context__').instance('cont')
 					}
 				}
@@ -3101,12 +3101,12 @@
 						exprContext._.index = opts.extRow ? opts.extRow : opts.row;
 						exprContext._.data = opts.extObj ? opts.extObj.data(false) : opts.data;
 
+						$.each(opts.bindmeta['*'], function(i, m){
+							N.expr.execute(opts.context, m, vals, exprContext);
+						});						
+
 						for ( var key in vals ) {
 							if(cols !== undefined && cols.indexOf(spltSepa + key + spltSepa) < 0){
-								continue;
-							}
-
-							if(!opts.bindmeta[key]){
 								continue;
 							}
 
