@@ -2648,7 +2648,7 @@
 			var expr, key, km;
 			/* 표현식을 포함하는가? */
 			if(!regexpExpr.test(s)){
-				return {};
+				return null;
 			}
 
 			regexpExpr.lastIndex = 0;
@@ -2877,7 +2877,8 @@
 							});
 						}else {
 							var noneDeterministicExpr = true;
-							for(var k in extractKeymap(v)){
+							var km = extractKeymap(v);
+							for(var k in km){
 								noneDeterministicExpr = false;
 								addBm(bm, {
 									  type: 'attr'
@@ -2895,7 +2896,7 @@
 								}
 							}
 
-							if(noneDeterministicExpr){
+							if(noneDeterministicExpr && km){
 								addBm(bm, {
 									type: 'attr'
 								  , name: n
@@ -2921,7 +2922,10 @@
 						}
 
 						var text = node.nodeValue;
-						for(var k in extractKeymap(text)){
+						var noneDeterministicExpr = true;
+						var km = extractKeymap(text);
+						for(var k in km){
+							noneDeterministicExpr = false;
 							addBm(bm, {
 								  type: 'text'
 								, index: i
@@ -2932,6 +2936,17 @@
 								, key: k
 							});
 						}
+						if(noneDeterministicExpr && km){
+							addBm(bm, {
+								type: 'text'
+								, index: i
+								, expr: text
+								, selector: selector
+								, tag: tagName
+								, tagType: ele.type
+								, key: '*'
+						  });								
+						}						
 					});
 				});
 				return bm;
