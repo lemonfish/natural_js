@@ -2671,6 +2671,7 @@
 			, input: true
 			, textarea: true
 			, br: true
+			, code: true
 			, hr: true
 		}
 		var isnotexprattrmap = {
