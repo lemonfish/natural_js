@@ -2708,7 +2708,17 @@
 					};
 				}
 
-				var $ele =  exprContext.$ele ? exprContext.$ele : (meta.isComponent ? $elContext.find(meta.selector + '.select_template__') : $elContext.find('>' + meta.selector));
+				var $ele =  exprContext.$ele;
+				
+				if(!$ele){
+					if(meta.isComponent){
+						$ele = $elContext.find(meta.selector + '.select_template__');
+					}else if(meta.hasGroup){
+						$ele = $elContext.find(meta.selector);
+					}else{
+						$ele = $elContext.find('>' + meta.selector);
+					}
+				}
 
 				switch(meta.type){
 					case "value":
@@ -2849,6 +2859,7 @@
 								, tagType: ele.type
 								, key: v
 								, isComponent: isComponent
+								, hasGroup: hasGroup
 							});
 						}else {
 							for(var k in extractKeymap(v)){
