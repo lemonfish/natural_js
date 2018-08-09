@@ -2677,7 +2677,8 @@
 			  'data-opts': true
 			, 'data-format': true
 			, 'data-validate': true
-			, pattern: true
+			, 'type': true
+			, 'pattern': true
 		}
 
 		N.expr = {
@@ -2837,7 +2838,7 @@
 								, isComponent: isComponent
 							});
 						}else if(n == 'name'){
-							if(!hasGroup) {
+							if(!hasGroup && !isComponent) {
 								continue;
 							}
 							addBm(bm, {
