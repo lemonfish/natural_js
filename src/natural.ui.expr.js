@@ -2660,6 +2660,11 @@
 				/* 변수 추출 및 중복 제거 */
 				while(key = regexpKeys.exec(expr)){
 					key = key[1].trim();
+
+					if('_,$,N,window,this'.indexOf(key) > -1){
+						continue;
+					}
+
 					km[key] = km[key] ? km[key] + 1 : 1;
 				}
 			}
