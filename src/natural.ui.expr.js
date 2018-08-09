@@ -2784,7 +2784,7 @@
 				var $elContext = $(elContext);
 
 				/** @type {jQuery} */
-				var $targets = $elContext.find(':not(.view_context__, option)').not('select_input__:not(.select_template__)');
+				var $targets = $elContext.find(':not(.view_context__, option)').not('.select_input__:not(.select_template__)');
 
 				var bm = {};
 
