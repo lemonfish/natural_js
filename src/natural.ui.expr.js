@@ -2621,7 +2621,7 @@
 					return o;
 				}else if(typeof o == 'function'){
 					return o();
-				}else if($.isPlainObject(o)){
+				}else if($.isPlainObject(o) && (!o.cont && !o.comp)){
 					for(var x in o){
 						if(o.hasOwnProperty(x)){
 							o[x] = __v__(o[x]);
